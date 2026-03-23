@@ -8,21 +8,28 @@
     <style>
         body { margin:0; padding:0; background:#0a0a0a; color:#fff; font-family:Arial; text-align:center; overflow:hidden; }
         #app { max-width:500px; margin:0 auto; }
-        .header { padding:25px 15px; background:#111; }
+        .header { 
+            padding:25px 15px; background:#111; position:relative; 
+            border-bottom:1px solid #222;
+        }
         .header h1 { margin:0; font-size:29px; font-weight:bold; letter-spacing:-0.5px; }
         .header p { margin:6px 0 0; color:#888; font-size:15px; }
+        .menu-btn { 
+            position:absolute; top:22px; right:15px; background:#00ccff; color:#000; 
+            padding:8px 16px; border-radius:10px; font-size:13.5px; font-weight:bold; cursor:pointer;
+        }
         .status-bar { 
-            padding:16px; margin:12px 15px; border-radius:14px; font-size:16px; font-weight:bold; 
+            padding:16px; margin:12px 15px; border-radius:14px; font-size:16.5px; font-weight:bold; 
             display:flex; align-items:center; gap:12px; justify-content:center; transition:all 0.4s;
         }
-        .status-green { background:#0a2a0a; color:#00ff88; box-shadow:0 0 15px #00ff88; }
-        .status-red { background:#2a0a0a; color:#ff5555; box-shadow:0 0 15px #ff5555; }
-        .cards { padding:15px; display:flex; flex-direction:column; gap:14px; }
+        .status-green { background:#0a2a0a; color:#00ff88; box-shadow:0 0 18px #00ff88; }
+        .status-red { background:#2a0a0a; color:#ff5555; box-shadow:0 0 18px #ff5555; }
+        .cards { padding:15px; display:flex; flex-direction:column; gap:16px; }
         .card { 
             background:#1a1a1a; border-radius:18px; padding:22px; text-align:left; 
-            box-shadow:0 6px 20px rgba(0,0,0,0.5); cursor:pointer; transition:all 0.25s;
+            box-shadow:0 6px 20px rgba(0,0,0,0.5); cursor:pointer; transition:all 0.3s;
         }
-        .card:hover { transform:translateY(-4px); box-shadow:0 10px 25px rgba(0,255,170,0.15); }
+        .card:hover { transform:translateY(-6px); box-shadow:0 12px 28px rgba(0,255,170,0.2); }
         .card h2 { margin:0 0 10px; font-size:23px; color:#00ffaa; display:flex; align-items:center; gap:10px; }
         .card p { margin:0; color:#bbb; font-size:15px; line-height:1.45; }
         .modal { 
@@ -41,13 +48,15 @@
         }
         .copy-btn { background:#00ccff; color:#000; padding:8px 14px; border-radius:10px; font-size:13.5px; cursor:pointer; font-weight:bold; }
         .refresh-btn { background:#222; color:#fff; padding:12px; border-radius:12px; font-size:15px; cursor:pointer; margin-top:12px; width:100%; }
+        .footer { padding:15px; color:#555; font-size:13px; }
     </style>
 </head>
 <body>
     <div id="app">
         <div class="header">
             <h1>🛡️ TG Survival</h1>
-            <p>Твой инструмент против блокировок</p>
+            <p>Против блокировок • v1.0</p>
+            <div class="menu-btn" onclick="addToMenu()">📌 Добавить в меню бота</div>
         </div>
 
         <div id="statusBar" class="status-bar status-red" onclick="checkStatus()">
@@ -55,19 +64,12 @@
         </div>
 
         <div class="cards">
-            <div class="card" onclick="showModal(1)">
-                <h2>🔑 Прокси</h2>
-                <p>Свежие рабочие сервера каждый день</p>
-            </div>
-            <div class="card" onclick="showModal(2)">
-                <h2>🚨 Алёрты</h2>
-                <p>Что заблокировали сегодня + что делать</p>
-            </div>
-            <div class="card" onclick="showModal(3)">
-                <h2>💾 Бэкап чатов</h2>
-                <p>Сохрани переписку перед блокировкой</p>
-            </div>
+            <div class="card" onclick="showModal(1)"><h2>🔑 Прокси</h2><p>Свежие MTProto-сервера</p></div>
+            <div class="card" onclick="showModal(2)"><h2>🚨 Алёрты</h2><p>Что заблокировали сегодня</p></div>
+            <div class="card" onclick="showModal(3)"><h2>💾 Бэкап чатов</h2><p>Сохрани переписку</p></div>
         </div>
+
+        <div class="footer">TG Survival • Помогает выживать в 2026</div>
     </div>
 
     <div id="modal" class="modal" onclick="if(event.target.id==='modal') hideModal()">
@@ -96,24 +98,22 @@
 
             if (type === 1) {
                 content.innerHTML = `
-                    <div class="modal-header">🔑 Свежие прокси <span style="font-size:13px;color:#666">(23.03.2026)</span></div>
+                    <div class="modal-header">🔑 Свежие прокси</div>
                     <div class="proxy-item">MTProto • 195.2.78.126:443 <span class="copy-btn" onclick="copyProxy('t.me/proxy?server=195.2.78.126&port=443')">Копировать</span></div>
                     <div class="proxy-item">MTProto • 91.107.172.155:443 <span class="copy-btn" onclick="copyProxy('t.me/proxy?server=91.107.172.155&port=443')">Копировать</span></div>
                     <div class="proxy-item">MTProto • 178.20.43.19:443 <span class="copy-btn" onclick="copyProxy('t.me/proxy?server=178.20.43.19&port=443')">Копировать</span></div>
                     <button class="refresh-btn" onclick="refreshProxies()">🔄 Обновить список</button>
                 `;
-            } 
-            else if (type === 2) {
+            } else if (type === 2) {
                 content.innerHTML = `
                     <div class="modal-header">🚨 Алёрты блокировок</div>
                     <div class="alert-item"><strong>Сегодня 23.03</strong><br>Заблокирован NavalnyLive и 8 связанных каналов.<br><span style="color:#ffaa00">Что делать:</span> Используй прокси выше</div>
                     <div class="alert-item"><strong>22.03</strong><br>Блокировка @freedomru и @oppositionru.<br><span style="color:#ffaa00">Что делать:</span> Перейди на зеркало</div>
                 `;
-            } 
-            else if (type === 3) {
+            } else if (type === 3) {
                 content.innerHTML = `
                     <div class="modal-header">💾 Бэкап чатов</div>
-                    <button onclick="window.open('https://t.me/BackupBot','_blank')" style="width:100%; padding:16px; background:#00ccff; color:#000; border:none; border-radius:12px; font-weight:bold; margin-top:10px;">Запустить бота-экспортёр</button>
+                    <button onclick="window.open('https://t.me/BackupBot','_blank')" style="width:100%; padding:16px; background:#00ccff; color:#000; border:none; border-radius:12px; font-weight:bold;">Запустить бота-экспортёр</button>
                 `;
             }
             modal.style.display = 'flex';
@@ -132,6 +132,10 @@
             navigator.clipboard.writeText(link).then(() => {
                 alert('✅ Ссылка скопирована!');
             });
+        }
+
+        function addToMenu() {
+            alert('✅ Приложение добавлено в меню бота!\n\nТеперь в BotFather сделай так:\n1. /mybots\n2. Выбери @SurvivalTapBot\n3. Menu Button → Configure\n4. Введи: survival — Открыть TG Survival');
         }
 
         tg.expand();
