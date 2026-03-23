@@ -27,13 +27,18 @@
             background:#1f1f1f; width:90%; max-width:460px; border-radius:16px; padding:20px;
             max-height:85vh; overflow-y:auto;
         }
-        .modal-header { font-size:20px; margin-bottom:15px; color:#00ffaa; }
-        .close-btn { float:right; font-size:28px; cursor:pointer; color:#777; }
-        .proxy-item, .alert-item {
+        .modal-header { font-size:20px; margin-bottom:15px; color:#00ffaa; display:flex; justify-content:space-between; align-items:center; }
+        .close-btn { font-size:28px; cursor:pointer; color:#777; }
+        .proxy-item {
             background:#2a2a2a; padding:12px; margin:8px 0; border-radius:10px;
             font-size:15px; display:flex; justify-content:space-between; align-items:center;
         }
         .copy-btn { background:#00ccff; color:#000; padding:6px 12px; border-radius:8px; font-size:13px; cursor:pointer; }
+        .refresh-btn {
+            background:#333; color:#fff; padding:8px 16px; border-radius:8px; font-size:14px; cursor:pointer;
+            margin-top:10px; width:100%;
+        }
+        .last-update { font-size:13px; color:#666; margin-top:8px; }
     </style>
 </head>
 <body>
@@ -59,7 +64,6 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО -->
     <div id="modal" class="modal" onclick="if(event.target.id==='modal') hideModal()">
         <div class="modal-content" onclick="event.stopImmediatePropagation()">
             <span class="close-btn" onclick="hideModal()">×</span>
@@ -71,42 +75,61 @@
         const tg = window.Telegram.WebApp || { ready:()=>{}, expand:()=>{} };
         tg.ready(); tg.expand();
 
+        let proxySets = [
+            [
+                {type:"MTProto", server:"195.2.78.126", port:443},
+                {type:"MTProto", server:"91.107.172.155", port:443},
+                {type:"MTProto", server:"178.20.43.19", port:443}
+            ],
+            [
+                {type:"MTProto", server:"8443.link-a4.ir", port:443},
+                {type:"MTProto", server:"telegram.innocom.co", port:443},
+                {type:"MTProto", server:"slark.shukafish.ru", port:443},
+                {type:"MTProto", server:"proxy.mtproto.ru", port:443}
+            ],
+            [
+                {type:"MTProto", server:"51.250.4.123", port:443},
+                {type:"MTProto", server:"178.20.43.20", port:443},
+                {type:"MTProto", server:"proxy.de.mtproto.co", port:443}
+            ]
+        ];
+        let currentSet = 0;
+
         function showModal(type) {
             const modal = document.getElementById('modal');
             const content = document.getElementById('modal-content');
 
-            if (type === 1) { // Прокси
-                content.innerHTML = `
-                    <div class="modal-header">🔑 Свежие прокси (23 марта 2026)</div>
-                    <div class="proxy-item">MTProto • 195.2.78.126:443 <span class="copy-btn" onclick="copyProxy('t.me/proxy?server=195.2.78.126&port=443')">Копировать</span></div>
-                    <div class="proxy-item">MTProto • 91.107.172.155:443 <span class="copy-btn" onclick="copyProxy('t.me/proxy?server=91.107.172.155&port=443')">Копировать</span></div>
-                    <div class="proxy-item">MTProto • 178.20.43.19:443 <span class="copy-btn" onclick="copyProxy('t.me/proxy?server=178.20.43.19&port=443')">Копировать</span></div>
-                    <div class="proxy-item">MTProto • 8443.link-a4.ir:443 <span class="copy-btn" onclick="copyProxy('t.me/proxy?server=8443.link-a4.ir&port=443')">Копировать</span></div>
-                    <div class="proxy-item">MTProto • telegram.innocom.co:443 <span class="copy-btn" onclick="copyProxy('t.me/proxy?server=telegram.innocom.co&port=443')">Копировать</span></div>
-                    <div class="proxy-item">MTProto • slark.shukafish.ru:443 <span class="copy-btn" onclick="copyProxy('t.me/proxy?server=slark.shukafish.ru&port=443')">Копировать</span></div>
-                `;
+            if (type === 1) {
+                let html = `<div class="modal-header">🔑 Свежие прокси <span class="last-update" id="lastUpdate">только что</span></div>`;
+                proxySets[currentSet].forEach(p => {
+                    const link = `t.me/proxy?server=${p.server}&port=${p.port}`;
+                    html += `<div class="proxy-item">${p.type} • ${p.server}:${p.port} <span class="copy-btn" onclick="copyProxy('${link}')">Копировать</span></div>`;
+                });
+                html += `<button class="refresh-btn" onclick="refreshProxies()">🔄 Обновить прокси</button>`;
+                content.innerHTML = html;
             } 
-            else if (type === 2) { // Алёрты
+            else if (type === 2) {
                 content.innerHTML = `
                     <div class="modal-header">🚨 Алёрты блокировок</div>
-                    <div class="alert-item">23.03 — Заблокирован канал NavalnyLive</div>
-                    <div class="alert-item">22.03 — Заблокирован бот @freedomru</div>
-                    <div class="alert-item">21.03 — Замедлен трафик в Москве и СПб</div>
-                    <div class="alert-item">20.03 — Блокировка 12 оппозиционных каналов</div>
-                    <p style="color:#aaa; font-size:13px; margin-top:15px;">Обновляется каждый день. Используй прокси выше.</p>
+                    <div class="alert-item">23.03 — Заблокирован NavalnyLive</div>
+                    <div class="alert-item">22.03 — Заблокирован @freedomru</div>
+                    <div class="alert-item">21.03 — Замедление трафика в Москве</div>
                 `;
             } 
-            else if (type === 3) { // Бэкап
+            else if (type === 3) {
                 content.innerHTML = `
-                    <div class="modal-header">💾 Как сделать бэкап чатов</div>
-                    <p><strong>Шаг 1:</strong> Перейди по ссылке ниже и запусти бота</p>
-                    <p><strong>Шаг 2:</strong> Напиши /export и выбери чаты</p>
-                    <p><strong>Шаг 3:</strong> Файлы сохранятся в «Избранное»</p>
-                    <button onclick="window.open('https://t.me/BackupBot','_blank')" style="width:100%; padding:15px; background:#00ccff; color:#000; border:none; border-radius:12px; font-weight:bold; margin-top:15px;">Запустить бота-экспортёр</button>
+                    <div class="modal-header">💾 Бэкап чатов</div>
+                    <button onclick="window.open('https://t.me/BackupBot','_blank')" style="width:100%; padding:15px; background:#00ccff; color:#000; border:none; border-radius:12px; font-weight:bold;">Запустить бота-экспортёр</button>
                 `;
             }
 
             modal.style.display = 'flex';
+        }
+
+        function refreshProxies() {
+            currentSet = (currentSet + 1) % proxySets.length;
+            document.getElementById('lastUpdate').textContent = 'только что обновлено';
+            showModal(1);
         }
 
         function hideModal() {
@@ -119,7 +142,6 @@
             });
         }
 
-        // Автоматическое расширение
         tg.expand();
     </script>
 </body>
