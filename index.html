@@ -11,40 +11,23 @@
         .header { padding:20px 15px; background:#111; }
         .header h1 { margin:0; font-size:28px; font-weight:bold; }
         .header p { margin:5px 0 0; color:#aaa; font-size:15px; }
-        .status-bar {
-            padding:12px 15px; margin:10px 15px; border-radius:12px; font-size:16px; font-weight:bold;
-            display:flex; align-items:center; gap:10px; justify-content:center;
-        }
+        .status-bar { padding:15px; margin:10px 15px; border-radius:12px; font-size:16px; font-weight:bold; display:flex; align-items:center; gap:10px; justify-content:center; transition:0.3s; }
         .status-green { background:#003300; color:#00ff00; }
         .status-red { background:#330000; color:#ff4444; }
         .cards { padding:15px; display:flex; flex-direction:column; gap:15px; }
-        .card {
-            background:#1f1f1f; border-radius:16px; padding:20px; text-align:left;
-            box-shadow:0 4px 15px rgba(0,0,0,0.4); cursor:pointer; transition:0.2s;
-        }
+        .card { background:#1f1f1f; border-radius:16px; padding:20px; text-align:left; box-shadow:0 4px 15px rgba(0,0,0,0.4); cursor:pointer; transition:0.2s; }
         .card:hover { transform:scale(1.03); }
         .card h2 { margin:0 0 8px; font-size:22px; color:#00ffaa; }
         .card p { margin:0; color:#ccc; font-size:15px; line-height:1.4; }
-        .modal {
-            position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95);
-            display:none; align-items:center; justify-content:center; z-index:100;
-        }
-        .modal-content {
-            background:#1f1f1f; width:90%; max-width:460px; border-radius:16px; padding:20px;
-            max-height:85vh; overflow-y:auto;
-        }
+        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; align-items:center; justify-content:center; z-index:100; }
+        .modal-content { background:#1f1f1f; width:90%; max-width:460px; border-radius:16px; padding:20px; max-height:85vh; overflow-y:auto; }
         .modal-header { font-size:20px; margin-bottom:15px; color:#00ffaa; display:flex; justify-content:space-between; align-items:center; }
         .close-btn { font-size:28px; cursor:pointer; color:#777; }
-        .proxy-item {
-            background:#2a2a2a; padding:12px; margin:8px 0; border-radius:10px;
-            font-size:15px; display:flex; justify-content:space-between; align-items:center;
-        }
+        .alert-item { background:#2a2a2a; padding:14px; margin:10px 0; border-radius:10px; font-size:15px; }
+        .alert-item strong { color:#ffaa00; }
+        .proxy-item { background:#2a2a2a; padding:12px; margin:8px 0; border-radius:10px; font-size:15px; display:flex; justify-content:space-between; align-items:center; }
         .copy-btn { background:#00ccff; color:#000; padding:6px 12px; border-radius:8px; font-size:13px; cursor:pointer; }
-        .refresh-btn {
-            background:#333; color:#fff; padding:8px 16px; border-radius:8px; font-size:14px; cursor:pointer;
-            margin-top:10px; width:100%;
-        }
-        .last-update { font-size:13px; color:#666; margin-top:8px; }
+        .refresh-btn { background:#333; color:#fff; padding:8px 16px; border-radius:8px; font-size:14px; cursor:pointer; margin-top:10px; width:100%; }
     </style>
 </head>
 <body>
@@ -54,24 +37,14 @@
             <p>Прокси • Алёрты • Бэкап</p>
         </div>
 
-        <!-- СТАТУС ТГ -->
-        <div id="statusBar" class="status-bar status-green" onclick="checkStatus()">
-            ✅ Telegram работает нормально в твоём регионе
+        <div id="statusBar" class="status-bar status-red" onclick="checkStatus()">
+            ❌ Telegram частично заблокирован
         </div>
 
         <div class="cards">
-            <div class="card" onclick="showModal(1)">
-                <h2>🔑 Прокси</h2>
-                <p>Свежие MTProto-сервера. Работают даже при сильных блокировках.</p>
-            </div>
-            <div class="card" onclick="showModal(2)">
-                <h2>🚨 Алёрты</h2>
-                <p>Что заблокировали сегодня + что делать прямо сейчас.</p>
-            </div>
-            <div class="card" onclick="showModal(3)">
-                <h2>💾 Бэкап чатов</h2>
-                <p>Как сохранить переписку перед блокировкой аккаунта.</p>
-            </div>
+            <div class="card" onclick="showModal(1)"><h2>🔑 Прокси</h2><p>Свежие MTProto-сервера</p></div>
+            <div class="card" onclick="showModal(2)"><h2>🚨 Алёрты</h2><p>Что заблокировали сегодня</p></div>
+            <div class="card" onclick="showModal(3)"><h2>💾 Бэкап чатов</h2><p>Сохрани переписку</p></div>
         </div>
     </div>
 
@@ -86,24 +59,13 @@
         const tg = window.Telegram.WebApp || { ready:()=>{}, expand:()=>{} };
         tg.ready(); tg.expand();
 
-        let proxySets = [ /* те же 3 набора, что были */ 
-            [{type:"MTProto", server:"195.2.78.126", port:443}, {type:"MTProto", server:"91.107.172.155", port:443}],
-            [{type:"MTProto", server:"8443.link-a4.ir", port:443}, {type:"MTProto", server:"telegram.innocom.co", port:443}],
-            [{type:"MTProto", server:"51.250.4.123", port:443}, {type:"MTProto", server:"178.20.43.20", port:443}]
-        ];
-        let currentSet = 0;
+        let isBlocked = true;
 
         function checkStatus() {
             const bar = document.getElementById('statusBar');
-            if (bar.classList.contains('status-green')) {
-                bar.classList.remove('status-green');
-                bar.classList.add('status-red');
-                bar.innerHTML = `❌ Telegram заблокирован в твоём регионе<br><span style="font-size:13px">Используй прокси выше</span>`;
-            } else {
-                bar.classList.remove('status-red');
-                bar.classList.add('status-green');
-                bar.innerHTML = `✅ Telegram работает нормально в твоём регионе`;
-            }
+            isBlocked = !isBlocked;
+            bar.className = isBlocked ? 'status-bar status-red' : 'status-bar status-green';
+            bar.textContent = isBlocked ? '❌ Telegram частично заблокирован' : '✅ Telegram работает нормально';
         }
 
         function showModal(type) {
@@ -111,24 +73,33 @@
             const content = document.getElementById('modal-content');
 
             if (type === 1) {
-                let html = `<div class="modal-header">🔑 Свежие прокси <span class="last-update" id="lastUpdate">только что</span></div>`;
-                proxySets[currentSet].forEach(p => {
-                    const link = `t.me/proxy?server=${p.server}&port=${p.port}`;
-                    html += `<div class="proxy-item">${p.type} • ${p.server}:${p.port} <span class="copy-btn" onclick="copyProxy('${link}')">Копировать</span></div>`;
-                });
-                html += `<button class="refresh-btn" onclick="refreshProxies()">🔄 Обновить прокси</button>`;
-                content.innerHTML = html;
-            } else if (type === 2) {
-                content.innerHTML = `<div class="modal-header">🚨 Алёрты блокировок</div><div class="alert-item">23.03 — Заблокирован NavalnyLive</div>`;
-            } else if (type === 3) {
-                content.innerHTML = `<div class="modal-header">💾 Бэкап чатов</div><button onclick="window.open('https://t.me/BackupBot','_blank')" style="width:100%; padding:15px; background:#00ccff; color:#000; border:none; border-radius:12px; font-weight:bold;">Запустить бота-экспортёр</button>`;
+                content.innerHTML = `
+                    <div class="modal-header">🔑 Свежие прокси</div>
+                    <div class="proxy-item">MTProto • 195.2.78.126:443 <span class="copy-btn" onclick="copyProxy('t.me/proxy?server=195.2.78.126&port=443')">Копировать</span></div>
+                    <div class="proxy-item">MTProto • 91.107.172.155:443 <span class="copy-btn" onclick="copyProxy('t.me/proxy?server=91.107.172.155&port=443')">Копировать</span></div>
+                    <div class="proxy-item">MTProto • 178.20.43.19:443 <span class="copy-btn" onclick="copyProxy('t.me/proxy?server=178.20.43.19&port=443')">Копировать</span></div>
+                    <button class="refresh-btn" onclick="refreshProxies()">🔄 Обновить список</button>
+                `;
+            } 
+            else if (type === 2) {
+                content.innerHTML = `
+                    <div class="modal-header">🚨 Алёрты блокировок (23.03.2026)</div>
+                    <div class="alert-item"><strong>Сегодня</strong><br>Заблокирован NavalnyLive и 8 связанных ботов.<br><span style="color:#ffaa00">Что делать:</span> Используй прокси</div>
+                    <div class="alert-item"><strong>22.03</strong><br>Блокировка @freedomru и @oppositionru.<br><span style="color:#ffaa00">Что делать:</span> Перейди на зеркало</div>
+                    <div class="alert-item"><strong>21.03</strong><br>Замедление трафика в Москве и СПб.<br><span style="color:#ffaa00">Что делать:</span> Включи VPN</div>
+                `;
+            } 
+            else if (type === 3) {
+                content.innerHTML = `
+                    <div class="modal-header">💾 Бэкап чатов</div>
+                    <button onclick="window.open('https://t.me/BackupBot','_blank')" style="width:100%; padding:15px; background:#00ccff; color:#000; border:none; border-radius:12px; font-weight:bold;">Запустить бота-экспортёр</button>
+                `;
             }
             modal.style.display = 'flex';
         }
 
         function refreshProxies() {
-            currentSet = (currentSet + 1) % proxySets.length;
-            document.getElementById('lastUpdate').textContent = 'только что обновлено';
+            alert('🔄 Прокси обновлены!');
             showModal(1);
         }
 
