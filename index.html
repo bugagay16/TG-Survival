@@ -8,16 +8,9 @@
     <style>
         body { margin:0; padding:0; background:#0a0a0a; color:#fff; font-family:Arial; text-align:center; overflow:hidden; }
         #app { max-width:500px; margin:0 auto; }
-        .header { 
-            padding:25px 15px; background:#111; position:relative; 
-            border-bottom:1px solid #222;
-        }
+        .header { padding:25px 15px; background:#111; }
         .header h1 { margin:0; font-size:29px; font-weight:bold; letter-spacing:-0.5px; }
         .header p { margin:6px 0 0; color:#888; font-size:15px; }
-        .menu-btn { 
-            position:absolute; top:22px; right:15px; background:#00ccff; color:#000; 
-            padding:8px 16px; border-radius:10px; font-size:13.5px; font-weight:bold; cursor:pointer;
-        }
         .status-bar { 
             padding:16px; margin:12px 15px; border-radius:14px; font-size:16.5px; font-weight:bold; 
             display:flex; align-items:center; gap:12px; justify-content:center; transition:all 0.4s;
@@ -48,15 +41,13 @@
         }
         .copy-btn { background:#00ccff; color:#000; padding:8px 14px; border-radius:10px; font-size:13.5px; cursor:pointer; font-weight:bold; }
         .refresh-btn { background:#222; color:#fff; padding:12px; border-radius:12px; font-size:15px; cursor:pointer; margin-top:12px; width:100%; }
-        .footer { padding:15px; color:#555; font-size:13px; }
     </style>
 </head>
 <body>
     <div id="app">
         <div class="header">
             <h1>🛡️ TG Survival</h1>
-            <p>Против блокировок • v1.0</p>
-            <div class="menu-btn" onclick="addToMenu()">📌 Добавить в меню бота</div>
+            <p>Твой инструмент против блокировок • v1.0</p>
         </div>
 
         <div id="statusBar" class="status-bar status-red" onclick="checkStatus()">
@@ -68,8 +59,6 @@
             <div class="card" onclick="showModal(2)"><h2>🚨 Алёрты</h2><p>Что заблокировали сегодня</p></div>
             <div class="card" onclick="showModal(3)"><h2>💾 Бэкап чатов</h2><p>Сохрани переписку</p></div>
         </div>
-
-        <div class="footer">TG Survival • Помогает выживать в 2026</div>
     </div>
 
     <div id="modal" class="modal" onclick="if(event.target.id==='modal') hideModal()">
@@ -132,10 +121,6 @@
             navigator.clipboard.writeText(link).then(() => {
                 alert('✅ Ссылка скопирована!');
             });
-        }
-
-        function addToMenu() {
-            alert('✅ Приложение добавлено в меню бота!\n\nТеперь в BotFather сделай так:\n1. /mybots\n2. Выбери @SurvivalTapBot\n3. Menu Button → Configure\n4. Введи: survival — Открыть TG Survival');
         }
 
         tg.expand();
